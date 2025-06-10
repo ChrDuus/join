@@ -19,22 +19,22 @@ import { Router } from '@angular/router';
   styleUrl: './signup.component.scss'
 })
 export class SignupComponent {
-  /** Service for managing contacts */
+  /** Service for managing contact data */
   contactService = inject(ContactService);
 
-  /** Service for displaying feedback messages to users */
+  /** Service for showing user feedback messages */
   feedbackService = inject(FeedbackServiceService);
 
-  /** Tracks which form fields have validation errors */
+  /** Keeps track of which form fields are currently invalid */
   invalidFields: string[] = [];
 
-  /** Indicates if the user has accepted the privacy policy */
+  /** Whether the privacy policy checkbox is accepted */
   privacyAccepted: boolean = false;
 
-  /** Controls visibility of the privacy policy */
+  /** Controls whether the privacy policy dialog is shown */
   showPrivacy = false;
 
-  /** Object containing all user registration data */
+  /** User input values grouped into a Userdata object */
   newUserData: Userdata = {
     name: '',
     email: '',
@@ -42,56 +42,45 @@ export class SignupComponent {
     confirmPassword: ''
   }
 
-  /** User's full name */
+  /** Input field: user's name */
   name: string = '';
 
-  /** User's email address */
+  /** Input field: user's email */
   email = '';
 
-  /** User's password */
+  /** Input field: password */
   password = '';
 
-  /** Password confirmation for validation */
+  /** Input field: confirm password */
   passwordConfirm = '';
 
-  /** Error message to display when registration fails */
+  /** Error message shown on registration failure */
   public error = '';
-  privacyError:boolean = false
-  showPrivacyError:boolean= false
 
-  /**
-   * Indicates whether the password field input should be visible (shown as plain text).
-   */
+  /** Flags for privacy policy validation */
+  privacyError: boolean = false;
+  showPrivacyError: boolean = false;
+
+  /** Controls visibility of password field */
   passwordVisible: boolean = false;
 
-  /**
-   * Indicates whether the confirm password field input should be visible (shown as plain text).
-   */
+  /** Controls visibility of confirm password field */
   confirmPasswordVisible: boolean = false;
 
-  /**
-   * True if the user has entered any value into the password field.
-   */
+  /** Flags indicating if user has entered text into password fields */
   passwordEntered: boolean = false;
-
-  /**
-   * True if the user has entered any value into the confirm password field.
-   */
   confirmPasswordEntered: boolean = false;
 
   /**
-   * Creates an instance of SignupComponent.
-   *
-   * @param authService - Service used to perform authentication operations
-   * @param router - Angular Router service used for navigation
+   * Constructor injecting authentication and routing services.
+   * @param authService - Handles user authentication
+   * @param router - For navigation after successful registration
    */
   constructor(public authService: AuthService, private router: Router) {}
 
   /**
-   * Handles input events for both password fields.
-   * Tracks whether the user has entered content and resets visibility if empty.
-   *
-   * @param field - Either 'password' or 'confirmPassword' to determine which input is being updated
+   * Tracks whether the user has typed into password fields and resets visibility on empty input.
+   * @param field - Either 'password' or 'confirmPassword'
    */
   onPasswordInput(field: 'password' | 'confirmPassword'): void {
     if (field === 'password') {
@@ -103,16 +92,17 @@ export class SignupComponent {
     }
   }
 
-validatePrivacy() {
-  this.autoValidatePrivacyIfReady();
-}
-
+  /**
+   * Validates the privacy policy checkbox if other form inputs are valid.
+   */
+  validatePrivacy() {
+    this.autoValidatePrivacyIfReady();
+  }
 
   /**
-   * Toggles visibility of the specified password input.
-   * Only works if the corresponding field contains text.
-   *
-   * @param field - Either 'password' or 'confirmPassword' indicating which input should toggle visibility
+   * Toggles the visibility of a password field.
+   * Only works if the user has entered a value.
+   * @param field - Either 'password' or 'confirmPassword'
    */
   togglePasswordVisibility(field: 'password' | 'confirmPassword'): void {
     if (field === 'password' && this.passwordEntered) {
@@ -121,20 +111,25 @@ validatePrivacy() {
       this.confirmPasswordVisible = !this.confirmPasswordVisible;
     }
   }
+
   /**
-   * Handles the registration form submission.
-   * Validates passwords match, registers the user, and redirects on success.
+   * Handles user registration.
+   * Performs validations and redirects on success.
    */
   public async onRegister() {
-    if(this.password === this.passwordConfirm){
+    if (this.password === this.passwordConfirm) {
       try {
         await this.authService.register(this.email, this.password, this.name);
-        if(!this.checkIfMailinUseInContact()){
-          await this.contactService.addContact({name:this.name,email: this.email, phone: 'Not existing yet'})
+        if (!this.checkIfMailinUseInContact()) {
+          await this.contactService.addContact({
+            name: this.name,
+            email: this.email,
+            phone: 'Not existing yet'
+          });
         }
         this.authService.UserLoggedIn = this.authService.getUsername(this.email);
         this.router.navigate(['/login']);
-        this.feedbackService.show('Registration successfull');
+        this.feedbackService.show('Registration successful');
       } catch (err: any) {
         this.error = err.message;
       }
@@ -142,66 +137,57 @@ validatePrivacy() {
   }
 
   /**
-   * Checks if the email is already used in the contact list.
-   * @returns Boolean indicating if the email is already in use
+   * Checks if a contact with the given email already exists.
+   * @returns true if the email is already in use
    */
   checkIfMailinUseInContact(): boolean {
-    let include = false;
-    this.contactService.contactList.forEach(c => {
-      if(this.email == c.email){
-        include = true;
-      }
-    });
-    return include;
+    return this.contactService.contactList.some(c => c.email === this.email);
   }
 
   /**
-   * Validates if the form meets minimum requirements.
-   * @returns Boolean indicating if the form is valid
+   * Returns true if all required fields are valid.
    */
   get isFormValid(): boolean {
     const isEmailValid = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(this.email);
-    return this.name.trim().length >= 2 && isEmailValid && this.password.length >= 6 && this.passwordConfirm.length >= 6;
+    return this.name.trim().length >= 2 &&
+           isEmailValid &&
+           this.password.length >= 6 &&
+           this.passwordConfirm.length >= 6;
   }
 
   /**
-   * Validates specific form fields and updates the invalidFields array.
-   * @param field - Name of the field to validate
+   * Validates a single form field and updates the invalidFields array.
+   * @param field - The field name to validate
    */
   validateForm(field: string) {
-  const addFieldIfInvalid = (condition: boolean, fieldName: string) => {
-    if (condition && !this.invalidFields.includes(fieldName)) {
-      this.invalidFields.push(fieldName);
-    } else if (!condition) {
-      this.invalidFields = this.invalidFields.filter(f => f !== fieldName);
-    }
-  };
+    const addFieldIfInvalid = (condition: boolean, fieldName: string) => {
+      if (condition && !this.invalidFields.includes(fieldName)) {
+        this.invalidFields.push(fieldName);
+      } else if (!condition) {
+        this.invalidFields = this.invalidFields.filter(f => f !== fieldName);
+      }
+    };
 
-  if (field === 'name') {
-    this.validateName(addFieldIfInvalid);
-  }
-  if (field === 'email') {
-    this.validateMail(addFieldIfInvalid);
-  }
-  if (field === 'password') {
-    this.validatePassword(addFieldIfInvalid);
-  }
-  if (field === 'confirmPassword') {
-    this.validateConfirmedPassword(addFieldIfInvalid);
-    }
-  this.autoValidatePrivacyIfReady();
-}
+    if (field === 'name') this.validateName(addFieldIfInvalid);
+    if (field === 'email') this.validateMail(addFieldIfInvalid);
+    if (field === 'password') this.validatePassword(addFieldIfInvalid);
+    if (field === 'confirmPassword') this.validateConfirmedPassword(addFieldIfInvalid);
 
-autoValidatePrivacyIfReady() {
-  const allInputsValid = this.invalidFields.length === 0 && this.isFormValid;
-  this.showPrivacyError = allInputsValid && !this.privacyAccepted;
-}
+    this.autoValidatePrivacyIfReady();
+  }
 
-  
+  /**
+   * Checks if privacy checkbox is unchecked while all other inputs are valid.
+   * Displays a visual error if necessary.
+   */
+  autoValidatePrivacyIfReady() {
+    const allInputsValid = this.invalidFields.length === 0 && this.isFormValid;
+    this.showPrivacyError = allInputsValid && !this.privacyAccepted;
+  }
 
   /**
    * Validates the name field.
-   * @param addFieldIfInvalid - Function to update invalidFields array
+   * @param addFieldIfInvalid - Callback to update validation status
    */
   validateName(addFieldIfInvalid: Function) {
     const isInvalid = !this.name || this.name.trim().length < 2;
@@ -209,20 +195,19 @@ autoValidatePrivacyIfReady() {
   }
 
   /**
-   * Validates the email field.
-   * @param addFieldIfInvalid - Function to update invalidFields array
+   * Validates the email field format.
+   * @param addFieldIfInvalid - Callback to update validation status
    */
   validateMail(addFieldIfInvalid: Function) {
     const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
     const email = this.email?.trim().toLowerCase();
-    const isFormatInvalid = !email || !emailRegex.test(email);
-    const isInvalid = isFormatInvalid;
+    const isInvalid = !email || !emailRegex.test(email);
     addFieldIfInvalid(isInvalid, 'email');
   }
 
   /**
-   * Validates the password field and triggers confirmation validation.
-   * @param addFieldIfInvalid - Function to update invalidFields array
+   * Validates the password field and re-validates the confirm password field.
+   * @param addFieldIfInvalid - Callback to update validation status
    */
   validatePassword(addFieldIfInvalid: Function) {
     const isInvalid = !this.password || this.password.length < 6;
@@ -234,8 +219,8 @@ autoValidatePrivacyIfReady() {
   }
 
   /**
-   * Validates the password confirmation field.
-   * @param addFieldIfInvalid - Function to update invalidFields array
+   * Validates that the confirmation password matches the main password.
+   * @param addFieldIfInvalid - Callback to update validation status
    */
   validateConfirmedPassword(addFieldIfInvalid: Function) {
     const isInvalid = this.passwordConfirm !== this.password;
@@ -243,23 +228,23 @@ autoValidatePrivacyIfReady() {
   }
 
   /**
-   * Navigates to the specified route.
-   * @param target - Route path to navigate to
+   * Navigates to a given route path.
+   * @param target - The route string to navigate to
    */
   goToAnotherPage(target: string): void {
     this.router.navigate([target]);
   }
 
   /**
-   * Navigates back to the home page.
+   * Navigates back to the home page and sets a flag to skip animation.
    */
-onBackClick(): void {
-  localStorage.setItem('skipLoginAnimation', 'true');
-  this.router.navigate(['/']);
-}
+  onBackClick(): void {
+    localStorage.setItem('skipLoginAnimation', 'true');
+    this.router.navigate(['/']);
+  }
 
   /**
-   * Closes the privacy policy dialog.
+   * Closes the privacy dialog.
    */
   closePrivacy() {
     this.showPrivacy = false;
