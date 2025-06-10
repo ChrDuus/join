@@ -11,21 +11,23 @@ export const appConfig: ApplicationConfig = {
   providers: [
     provideRouter(
       routes,
-      withComponentInputBinding() // Routen-Params → automatisch als Inputs
+      withComponentInputBinding() 
     ),
     provideFirebaseApp(() =>
       initializeApp({
-        projectId: 'join-1-46a2d',
-        appId: '1:414847680321:web:1f023837141c2935ac6bc0',
-        storageBucket: 'join-1-46a2d.firebasestorage.app',
-        apiKey: 'AIzaSyCXcBokA4SNkxf0PRKFrD0_E0GnPnrnUAs',
-        authDomain: 'join-1-46a2d.firebaseapp.com',
-        messagingSenderId: '414847680321',
-        measurementId: 'G-RXQNVD7VXR',
+        apiKey: "AIzaSyA5XtwCHOy2Mc2JGvs-el17xoc-4slQOKc",
+  authDomain: "join-da-ee725.firebaseapp.com",
+  projectId: "join-da-ee725",
+  storageBucket: "join-da-ee725.firebasestorage.app",
+  messagingSenderId: "251223421284",
+  appId: "1:251223421284:web:a748e0c05e6a600907ca71",
+  measurementId: "G-5PJYYZ7LHV"
       })
     ),
     provideFirestore(() => getFirestore()),
     provideAuth(() => getAuth()),
     provideAnimationsAsync(),
   ],
+
+  
 };
