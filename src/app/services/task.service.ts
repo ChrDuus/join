@@ -11,7 +11,7 @@ import {
   updateDoc,
 } from '@angular/fire/firestore';
 import { Task } from '../interfaces/task';
-import { query, orderBy, limit } from 'firebase/firestore';
+import { query, orderBy,  } from '@angular/fire/firestore';
 import { ContactService } from './contact.service';
 import { Contact } from '../interfaces/contact';
 import { FeedbackServiceService } from './feedback.service';

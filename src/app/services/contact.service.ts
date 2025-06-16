@@ -7,7 +7,7 @@ import { Injectable, OnDestroy, effect} from '@angular/core';
 import { inject } from '@angular/core';
 import { Firestore, collectionData, collection, doc, onSnapshot, addDoc, deleteDoc, updateDoc} from '@angular/fire/firestore';
 import { Contact } from '../interfaces/contact';
-import { query, orderBy, limit } from 'firebase/firestore';
+import { query, orderBy, limit } from '@angular/fire/firestore';
 import { TaskService } from './task.service';
 import { OverlayService } from './overlay.service';
 
